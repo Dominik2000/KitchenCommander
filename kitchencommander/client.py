@@ -15,26 +15,31 @@ class Client(Gtk.Window):
         Gtk.Window.__init__(self, title="KitchenCommander - Client")
         self.fullscreen()
 
-        hb = Gtk.HeaderBar()
-        hb.set_show_close_button(False)
-        hb.props.title = "KitchenCommander - Client"
-        hb.set_show_close_button(True)
-        self.set_titlebar(hb)
+        # hb = Gtk.HeaderBar()
+        # hb.set_show_close_button(False)
+        # hb.props.title = "KitchenCommander - Client"
+        # hb.set_show_close_button(True)
+        # self.set_titlebar(hb)
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         Gtk.StyleContext.add_class(box.get_style_context(), "linked")
 
         self.button_prev_page = Gtk.Button()
+        self.button_prev_page.set_size_request(50, 50)
         self.button_prev_page.add(Gtk.Arrow(Gtk.ArrowType.LEFT, Gtk.ShadowType.NONE))
         self.button_prev_page.connect("clicked", self._prev_page)
         box.add(self.button_prev_page)
 
         self.button_next_page = Gtk.Button()
+        self.button_next_page.set_size_request(50, 50)
         self.button_next_page.add(Gtk.Arrow(Gtk.ArrowType.RIGHT, Gtk.ShadowType.NONE))
         self.button_next_page.connect("clicked", self._next_page)
         box.add(self.button_next_page)
 
-        hb.pack_start(box)
+        # hb.pack_start(box)
+
+        self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.main_box.pack_start(box, False, False, 0)
 
         print("Loading ingredients...")
         self.ingredients = {}
@@ -66,7 +71,8 @@ class Client(Gtk.Window):
                     y = 0
 
         self.button_prev_page.set_sensitive(False)
-        self.add(self.pages[self.actual_page])
+        self.main_box.pack_start(self.pages[self.actual_page], True, True, 0)
+        self.add(self.main_box)
         self.show_all()
 
     def _new_order(self, button, ingredient_id):
@@ -84,16 +90,16 @@ class Client(Gtk.Window):
     def _next_page(self, button):
         old_page = self.actual_page
         self.actual_page += 1
-        self.remove(self.pages[old_page])
-        self.add(self.pages[self.actual_page])
+        self.main_box.remove(self.pages[old_page])
+        self.main_box.pack_start(self.pages[self.actual_page], True, True, 0)
         self._update_button_state()
         self.show_all()
 
     def _prev_page(self, button):
         old_page = self.actual_page
         self.actual_page -= 1
-        self.remove(self.pages[old_page])
-        self.add(self.pages[self.actual_page])
+        self.main_box.remove(self.pages[old_page])
+        self.main_box.pack_start(self.pages[self.actual_page], True, True, 0)
         self._update_button_state()
         self.show_all()
 

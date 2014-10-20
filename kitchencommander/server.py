@@ -4,6 +4,7 @@ import datetime
 import queue
 import socket
 import configparser
+import os
 
 from gi.repository import Gtk, GdkPixbuf, GObject
 from bs4 import BeautifulSoup
@@ -17,7 +18,7 @@ class Server(Gtk.Window):
     def __init__(self, grid_width=960, grid_height=540):
         # Queue which orders are showed
         self.ingredient_orders = queue.deque(maxlen=4)
-        #Queue which orders are should be showed if place
+        # Queue which orders are should be showed if place
         self.ingredient_orders_buffer = queue.Queue()
         #Queue which order is new and appears as overlay
         self.ingredient_order_new = None
@@ -28,6 +29,7 @@ class Server(Gtk.Window):
         self.seconds_to_show_big = config.get('General', 'SecondsShowNewOrderBig')
         self.images_path = config.get('General', 'ImagesPath')
         self.ingredients_file = config.get('General', 'IngredientFile')
+        self.alert_sound_file = config.get('General', 'AlertSoundFile')
         self.rpc_port = config.get('General', 'Port')
         self.grid_width = grid_width
         self.grid_height = grid_height
@@ -112,8 +114,8 @@ class Server(Gtk.Window):
                       + element.ingredient.ingredient_name)
                 self.overlay.add_overlay(self.ingredient_order_new.ingredient.image)
                 self.overlay.show_all()
+                os.system("mpg321 {0} &".format(self.alert_sound_file))
                 GObject.timeout_add_seconds(int(self.seconds_to_show_big), self._remove_overlay)
-
             except KeyError:
                 print('Cannot find id ' + str(ingredient_id) + ' in dictionary')
         for box in self.boxes:
