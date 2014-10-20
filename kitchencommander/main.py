@@ -1,18 +1,25 @@
 __author__ = 'dominik'
 
+import argparse
+
 from gi.repository import Gtk
-import configparser
+
 import server
-
-config = configparser.ConfigParser()
-config.read('settings.cfg')
-
-if config.get('General', 'Type') == 'Server':
-        images_path = config.get('General', 'ImagesPath')
-        ingredients_file = config.get('General', 'IngredientFile')
-        server_window = server.Server(images_path, ingredients_file)
-        server_window.connect("delete-event", Gtk.main_quit)
-        server_window.show_all()
-        Gtk.main()
+import client
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument('type', type=str)
+args = parser.parse_args()
+
+if args.type == 'server':
+    print("Starting server...")
+    server_window = server.Server()
+    server_window.connect("delete-event", Gtk.main_quit)
+    server_window.show_all()
+elif args.type == 'client':
+    print("Starting client...")
+    client_window = client.Client()
+    client_window.connect("delete-event", Gtk.main_quit)
+    client_window.show_all()
+Gtk.main()

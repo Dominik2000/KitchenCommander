@@ -1,33 +1,40 @@
 __author__ = 'dominik'
 
-from gi.repository import Gtk, GdkPixbuf, GObject
 import datetime
-from bs4 import BeautifulSoup
-import rpcserverthread
 import queue
 import socket
+import configparser
+
+from gi.repository import Gtk, GdkPixbuf, GObject
+from bs4 import BeautifulSoup
+
+import rpcserverthread
 import ingredient
 import ingredientorder
 
 
 class Server(Gtk.Window):
-
-    def __init__(self, images_path, ingredients_file, seconds_to_show=30, seconds_to_show_big=15,  grid_width=500, grid_height=500):
-        #Queue which orders are showed
+    def __init__(self, grid_width=960, grid_height=540):
+        # Queue which orders are showed
         self.ingredient_orders = queue.deque(maxlen=4)
         #Queue which orders are should be showed if place
         self.ingredient_orders_buffer = queue.Queue()
         #Queue which order is new and appears as overlay
         self.ingredient_order_new = None
-        self.seconds_to_show = seconds_to_show
-        self.seconds_to_show_big = seconds_to_show_big
-        self.images_path = images_path
-        self.ingredients_file = ingredients_file
+
+        config = configparser.ConfigParser()
+        config.read('settings.cfg')
+        self.seconds_to_show = config.get('General', 'SecondsShowOrder')
+        self.seconds_to_show_big = config.get('General', 'SecondsShowNewOrderBig')
+        self.images_path = config.get('General', 'ImagesPath')
+        self.ingredients_file = config.get('General', 'IngredientFile')
+        self.rpc_port = config.get('General', 'Port')
         self.grid_width = grid_width
         self.grid_height = grid_height
 
         print('Setting up GUI...')
         Gtk.Window.__init__(self, title="KitchenCommander - Server")
+        self.fullscreen()
         self.main_grid = Gtk.Grid()
         self.main_grid.set_size_request(self.grid_width, self.grid_height)
 
@@ -48,11 +55,13 @@ class Server(Gtk.Window):
         self.ingredients = {}
         self._load_ingredients()
 
-        print('Trying to start server...')
-        self.rpc = rpcserverthread.RPCServerThread(self.ingredient_orders_buffer)
+        print('Trying to start RPC server...l')
+        self.rpc = rpcserverthread.RPCServerThread(self.ingredient_orders_buffer, self.ingredients, self.rpc_port)
         self.rpc.start()
-        print('Started server, running on ' + [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in
-                                               [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1] + ':8000')
+        print('Started server, running on ' +
+              [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in
+               [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1] + ':' +
+              self.rpc_port)
 
         print('Starting update timer')
         GObject.timeout_add_seconds(1, self._update)
@@ -66,14 +75,16 @@ class Server(Gtk.Window):
             ingr = ingredient.Ingredient(item.find("name").string)
             file = self.images_path + item.find("image").string
             pixbuf = GdkPixbuf.Pixbuf.new_from_file(file)
-            pixbuf = GdkPixbuf.Pixbuf.scale_simple(pixbuf, self.grid_width, self.grid_height,
+            pixbuf = GdkPixbuf.Pixbuf.scale_simple(pixbuf, self.overlay.get_allocation().width,
+                                                   self.overlay.get_allocation().height,
                                                    GdkPixbuf.InterpType.BILINEAR)
             image = Gtk.Image()
             image.set_from_pixbuf(pixbuf)
             ingr.image = image
             ingr.image.set_halign(Gtk.Align.START)
             ingr.image.set_valign(Gtk.Align.START)
-            pixbuf = GdkPixbuf.Pixbuf.scale_simple(pixbuf, self.grid_width / 2, self.grid_height / 2,
+            pixbuf = GdkPixbuf.Pixbuf.scale_simple(pixbuf, self.overlay.get_allocation().width / 2,
+                                                   self.overlay.get_allocation().height / 2,
                                                    GdkPixbuf.InterpType.BILINEAR)
             image = Gtk.Image()
             image.set_from_pixbuf(pixbuf)
@@ -93,7 +104,7 @@ class Server(Gtk.Window):
             ingredient_id = self.ingredient_orders_buffer.get()
             try:
                 element = ingredientorder.IngredientOrder(self.ingredients[ingredient_id])
-                element.delete_time = datetime.datetime.now() + datetime.timedelta(seconds=self.seconds_to_show)
+                element.delete_time = datetime.datetime.now() + datetime.timedelta(seconds=int(self.seconds_to_show))
                 self.ingredient_orders.append(element)
                 self.ingredient_order_new = element
                 print('Added new ingredient order to show with deletion time '
@@ -101,7 +112,7 @@ class Server(Gtk.Window):
                       + element.ingredient.ingredient_name)
                 self.overlay.add_overlay(self.ingredient_order_new.ingredient.image)
                 self.overlay.show_all()
-                GObject.timeout_add_seconds(self.seconds_to_show_big, self._remove_overlay)
+                GObject.timeout_add_seconds(int(self.seconds_to_show_big), self._remove_overlay)
 
             except KeyError:
                 print('Cannot find id ' + str(ingredient_id) + ' in dictionary')

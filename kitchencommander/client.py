@@ -1,122 +1,122 @@
 __author__ = 'dominik'
 
-from gi.repository import Gtk, GdkPixbuf, GObject
-import datetime
-from bs4 import BeautifulSoup
-import rpcserverthread
-import queue
+import xmlrpc.client
 import socket
+import math
+
 import ingredient
-import ingredientorder
 
 
-class Server(Gtk.Window):
-
-    def __init__(self, images_path, ingredients_file, seconds_to_show=30, seconds_to_show_big=15,  grid_width=500, grid_height=500):
-        #Queue which orders are showed
-        self.ingredient_orders = queue.deque(maxlen=4)
-        #Queue which orders are should be showed if place
-        self.ingredient_orders_buffer = queue.Queue()
-        #Queue which order is new and appears as overlay
-        self.ingredient_order_new = None
-        self.seconds_to_show = seconds_to_show
-        self.seconds_to_show_big = seconds_to_show_big
-        self.images_path = images_path
-        self.ingredients_file = ingredients_file
-        self.grid_width = grid_width
-        self.grid_height = grid_height
+class Client(Gtk.Window):
+    def __init__(self, button_rows=2, button_columns=2):
 
         print('Setting up GUI...')
-        Gtk.Window.__init__(self, title="KitchenCommander - Server")
-        self.main_grid = Gtk.Grid()
-        self.main_grid.set_size_request(self.grid_width, self.grid_height)
+        Gtk.Window.__init__(self, title="KitchenCommander - Client")
+        self.fullscreen()
 
-        self.boxes = [Gtk.Image(), Gtk.Image(), Gtk.Image(), Gtk.Image()]
-        self.main_grid.attach(self.boxes[0], 0, 0, 1, 1)
-        self.main_grid.attach(self.boxes[1], 1, 0, 1, 1)
-        self.main_grid.attach(self.boxes[2], 0, 1, 1, 1)
-        self.main_grid.attach(self.boxes[3], 1, 1, 1, 1)
+        hb = Gtk.HeaderBar()
+        hb.set_show_close_button(False)
+        hb.props.title = "KitchenCommander - Client"
+        hb.set_show_close_button(True)
+        self.set_titlebar(hb)
 
-        self.overlay = Gtk.Overlay()
-        self.add(self.overlay)
-        self.overlay.add(self.main_grid)
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        Gtk.StyleContext.add_class(box.get_style_context(), "linked")
 
-        self.overlay.show_all()
-        self.show_all()
+        self.button_prev_page = Gtk.Button()
+        self.button_prev_page.add(Gtk.Arrow(Gtk.ArrowType.LEFT, Gtk.ShadowType.NONE))
+        self.button_prev_page.connect("clicked", self._prev_page)
+        box.add(self.button_prev_page)
+
+        self.button_next_page = Gtk.Button()
+        self.button_next_page.add(Gtk.Arrow(Gtk.ArrowType.RIGHT, Gtk.ShadowType.NONE))
+        self.button_next_page.connect("clicked", self._next_page)
+        box.add(self.button_next_page)
+
+        hb.pack_start(box)
 
         print("Loading ingredients...")
         self.ingredients = {}
-        self._load_ingredients()
+        if not self._get_ingredients():
+            exit(100)
 
-        print('Trying to start server...')
-        self.rpc = rpcserverthread.RPCServerThread(self.ingredient_orders_buffer)
-        self.rpc.start()
-        print('Started server, running on ' + [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in
-                                               [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1] + ':8000')
+        self.actual_page = 0
+        self.pages_number = math.ceil(len(self.ingredients) / (button_rows * button_columns))
 
-        print('Starting update timer')
-        GObject.timeout_add_seconds(1, self._update)
+        self.pages = {}
+        for i in range(0, self.pages_number):
+            self.pages[i] = Gtk.Table(button_rows, button_columns, True)
 
-    def _load_ingredients(self):
-        handler = open(self.ingredients_file).read()
-        soup = BeautifulSoup(handler)
+        page = 0
+        x = 0
+        y = 0
+        for key, value in sorted(self.ingredients.items()):
+            button = Gtk.Button(value.ingredient_name)
+            button.connect("clicked", self._new_order, key)
+            self.pages[page].attach(button, x, x + 1, y, y + 1)
 
-        i = 0
-        for item in soup.find_all("ingredient"):
-            ingr = ingredient.Ingredient(item.find("name").string)
-            file = self.images_path + item.find("image").string
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file(file)
-            pixbuf = GdkPixbuf.Pixbuf.scale_simple(pixbuf, self.grid_width, self.grid_height,
-                                                   GdkPixbuf.InterpType.BILINEAR)
-            image = Gtk.Image()
-            image.set_from_pixbuf(pixbuf)
-            ingr.image = image
-            ingr.image.set_halign(Gtk.Align.START)
-            ingr.image.set_valign(Gtk.Align.START)
-            pixbuf = GdkPixbuf.Pixbuf.scale_simple(pixbuf, self.grid_width / 2, self.grid_height / 2,
-                                                   GdkPixbuf.InterpType.BILINEAR)
-            image = Gtk.Image()
-            image.set_from_pixbuf(pixbuf)
-            ingr.image_thumbnail = image
-            self.ingredients[i] = ingr
-            i += 1
+            x += 1
+            if x >= button_columns:
+                x = 0
+                y += 1
+                if y >= button_rows:
+                    page += 1
+                    x = 0
+                    y = 0
 
-    def _update(self):
+        self.button_prev_page.set_sensitive(False)
+        self.add(self.pages[self.actual_page])
+        self.show_all()
+
+    def _new_order(self, button, ingredient_id):
         try:
-            element = self.ingredient_orders.popleft()
-            if element.delete_time > datetime.datetime.now():
-                self.ingredient_orders.appendleft(element)
-        except IndexError:
-            pass
-        if not len(self.ingredient_orders) == self.ingredient_orders.maxlen \
-                and not self.ingredient_orders_buffer.empty() and not self.ingredient_order_new:
-            ingredient_id = self.ingredient_orders_buffer.get()
-            try:
-                element = ingredientorder.IngredientOrder(self.ingredients[ingredient_id])
-                element.delete_time = datetime.datetime.now() + datetime.timedelta(seconds=self.seconds_to_show)
-                self.ingredient_orders.append(element)
-                self.ingredient_order_new = element
-                print('Added new ingredient order to show with deletion time '
-                      + element.delete_time.strftime('%H:%M:%S') + ' and ingredient '
-                      + element.ingredient.ingredient_name)
-                self.overlay.add_overlay(self.ingredient_order_new.ingredient.image)
-                self.overlay.show_all()
-                GObject.timeout_add_seconds(self.seconds_to_show_big, self._remove_overlay)
+            proxy = xmlrpc.client.ServerProxy("http://localhost:8000/")
+            ordered_id = proxy.add_to_queue(ingredient_id)
 
-            except KeyError:
-                print('Cannot find id ' + str(ingredient_id) + ' in dictionary')
-        for box in self.boxes:
-            box.clear()
-        i = 0
-        while True:
-            try:
-                self.boxes[i].set_from_pixbuf(self.ingredient_orders[i].ingredient.image_thumbnail.get_pixbuf())
-            except IndexError:
-                break
-            i += 1
-        return True
+            if not ordered_id == ingredient_id:
+                print('ERROR: Wrong id returned.')
+        except xmlrpc.client.Fault as err:
+            print('ERROR: ' + err.faultString)
+        except socket.error:
+            print('ERROR: No server available on this ip!')
 
-    def _remove_overlay(self):
-        self.overlay.remove(self.ingredient_order_new.ingredient.image)
-        self.ingredient_order_new = None
+    def _next_page(self, button):
+        old_page = self.actual_page
+        self.actual_page += 1
+        self.remove(self.pages[old_page])
+        self.add(self.pages[self.actual_page])
+        self._update_button_state()
+        self.show_all()
+
+    def _prev_page(self, button):
+        old_page = self.actual_page
+        self.actual_page -= 1
+        self.remove(self.pages[old_page])
+        self.add(self.pages[self.actual_page])
+        self._update_button_state()
+        self.show_all()
+
+    def _update_button_state(self):
+        if self.actual_page <= 0:
+            self.button_prev_page.set_sensitive(False)
+        else:
+            self.button_prev_page.set_sensitive(True)
+        if self.actual_page >= self.pages_number - 1:
+            self.button_next_page.set_sensitive(False)
+        else:
+            self.button_next_page.set_sensitive(True)
+
+    def _get_ingredients(self):
+        try:
+            proxy = xmlrpc.client.ServerProxy("http://localhost:8000/")
+
+            ingredients_simple = proxy.get_ingredients()
+            for key, value in ingredients_simple.items():
+                ingr = ingredient.Ingredient(value)
+                self.ingredients[int(key)] = ingr
+            return True
+        except xmlrpc.client.Fault as err:
+            print('ERROR: ' + err.faultString)
+        except socket.error:
+            print('ERROR: No server available on this ip!')
         return False
