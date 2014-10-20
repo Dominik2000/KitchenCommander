@@ -4,6 +4,8 @@ import xmlrpc.client
 import socket
 import math
 
+from gi.repository import Gtk, GdkPixbuf, GObject
+
 import ingredient
 
 
