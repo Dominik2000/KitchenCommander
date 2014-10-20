@@ -41,6 +41,8 @@ class Client(Gtk.Window):
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.main_box.pack_start(box, False, False, 0)
 
+        self.main_box.get_settings().set_string_property('gtk-font-name', 'Tahoma 24', '')
+
         print("Loading ingredients...")
         self.ingredients = {}
         if not self._get_ingredients():
