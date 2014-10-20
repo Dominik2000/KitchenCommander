@@ -8,7 +8,8 @@ import ingredient
 
 
 class Client(Gtk.Window):
-    def __init__(self, button_rows=2, button_columns=2):
+    def __init__(self, ip, port, button_rows=2, button_columns=2):
+        self.connection = "http://{0}:{1}/".format(ip, port)
 
         print('Setting up GUI...')
         Gtk.Window.__init__(self, title="KitchenCommander - Client")
@@ -70,7 +71,7 @@ class Client(Gtk.Window):
 
     def _new_order(self, button, ingredient_id):
         try:
-            proxy = xmlrpc.client.ServerProxy("http://localhost:8000/")
+            proxy = xmlrpc.client.ServerProxy(self.connection)
             ordered_id = proxy.add_to_queue(ingredient_id)
 
             if not ordered_id == ingredient_id:
@@ -108,7 +109,7 @@ class Client(Gtk.Window):
 
     def _get_ingredients(self):
         try:
-            proxy = xmlrpc.client.ServerProxy("http://localhost:8000/")
+            proxy = xmlrpc.client.ServerProxy(self.connection)
 
             ingredients_simple = proxy.get_ingredients()
             for key, value in ingredients_simple.items():

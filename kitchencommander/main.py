@@ -10,6 +10,8 @@ import client
 
 parser = argparse.ArgumentParser()
 parser.add_argument('type', type=str)
+parser.add_argument('--ip', type=str)
+parser.add_argument('--port', type=str)
 args = parser.parse_args()
 
 if args.type == 'server':
@@ -19,7 +21,7 @@ if args.type == 'server':
     server_window.show_all()
 elif args.type == 'client':
     print("Starting client...")
-    client_window = client.Client()
+    client_window = client.Client(args.ip, args.port)
     client_window.connect("delete-event", Gtk.main_quit)
     client_window.show_all()
 Gtk.main()
