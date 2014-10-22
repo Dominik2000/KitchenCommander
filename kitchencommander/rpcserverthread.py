@@ -7,7 +7,7 @@ import threading
 class RPCServerThread(threading.Thread):
     def __init__(self, ingredient_queue, ingredients, port):
         threading.Thread.__init__(self)
-        self.server = xmlrpc.server.SimpleXMLRPCServer(("192.168.2.77", int(port)))
+        self.server = xmlrpc.server.SimpleXMLRPCServer(("0.0.0.0", int(port)))
         self.server.register_function(self.add_ingredient, "add_to_queue")
         self.server.register_function(self.get_ingredients, "get_ingredients")
         self.ingredient_queue = ingredient_queue

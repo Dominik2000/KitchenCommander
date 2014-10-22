@@ -10,7 +10,7 @@ import ingredient
 
 
 class Client(Gtk.Window):
-    def __init__(self, ip, port, button_rows=2, button_columns=2):
+    def __init__(self, ip, port, button_rows=5, button_columns=3):
         self.connection = "http://{0}:{1}/".format(ip, port)
 
         print('Setting up GUI...')
@@ -43,7 +43,7 @@ class Client(Gtk.Window):
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.main_box.pack_start(box, False, False, 0)
 
-        self.main_box.get_settings().set_string_property('gtk-font-name', 'Tahoma 24', '')
+        self.main_box.get_settings().set_string_property('gtk-font-name', 'Tahoma 20', '')
 
         print("Loading ingredients...")
         self.ingredients = {}

@@ -15,7 +15,7 @@ import ingredientorder
 
 
 class Server(Gtk.Window):
-    def __init__(self, grid_width=960, grid_height=540):
+    def __init__(self, grid_width=1920, grid_height=1080):
         # Queue which orders are showed
         self.ingredient_orders = queue.deque(maxlen=4)
         # Queue which orders are should be showed if place
