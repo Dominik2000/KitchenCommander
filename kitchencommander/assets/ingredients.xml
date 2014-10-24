@@ -5,55 +5,127 @@
         <image>Teig.jpg</image>
     </ingredient>
     <ingredient>
+        <name>2xTeig</name>
+        <image>2xTeig.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Käse</name>
+        <image>Kaese.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Schinken</name>
+        <image>Schinken.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Tomatensauce</name>
+        <image>Tomatensauce.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Champignons</name>
+        <image>Champignons.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Zwiebel</name>
+        <image>Zwiebel.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Salami</name>
+        <image>Salami.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Speck</name>
+        <image>Speck.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Mais</name>
+        <image>Mais.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Pfefferoni</name>
+        <image>Pfefferoni.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Artischocken</name>
+        <image>Artischocken.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Thunfisch</name>
+        <image>Thunfisch.jpg</image>
+    </ingredient>
+    <ingredient>
         <name>Ananas</name>
         <image>Ananas.jpg</image>
     </ingredient>
     <ingredient>
-        <name>Zwiebel</name>
-        <image>Zwiebel.jpg</image>
+        <name>Dressing</name>
+        <image>Dressing.jpg</image>
     </ingredient>
     <ingredient>
-        <name>Zwiebel</name>
-        <image>Zwiebel.jpg</image>
+        <name>Broccoli</name>
+        <image>Broccoli.jpg</image>
     </ingredient>
     <ingredient>
-        <name>Zwiebel</name>
-        <image>Zwiebel.jpg</image>
+        <name>Jalapenos</name>
+        <image>Jalapenos.jpg</image>
     </ingredient>
     <ingredient>
-        <name>Zwiebel</name>
-        <image>Zwiebel.jpg</image>
+        <name>Letscho</name>
+        <image>Letscho.jpg</image>
     </ingredient>
     <ingredient>
-        <name>Zwiebel</name>
-        <image>Zwiebel.jpg</image>
+        <name>Mozzarella</name>
+        <image>Mozzarella.jpg</image>
     </ingredient>
     <ingredient>
-        <name>Zwiebel</name>
-        <image>Zwiebel.jpg</image>
+        <name>Prosciutto</name>
+        <image>Prosciutto.jpg</image>
     </ingredient>
     <ingredient>
-        <name>Zwiebel</name>
-        <image>Zwiebel.jpg</image>
+        <name>Schafkäse</name>
+        <image>Schafkaese.jpg</image>
     </ingredient>
     <ingredient>
-        <name>Zwiebel</name>
-        <image>Zwiebel.jpg</image>
+        <name>Spargel</name>
+        <image>Spargel.jpg</image>
     </ingredient>
     <ingredient>
-        <name>Zwiebel</name>
-        <image>Zwiebel.jpg</image>
+        <name>Spinat</name>
+        <image>Spinat.jpg</image>
     </ingredient>
     <ingredient>
-        <name>Zwiebel</name>
-        <image>Zwiebel.jpg</image>
+        <name>Mare</name>
+        <image>Mare.jpg</image>
     </ingredient>
     <ingredient>
-        <name>Zwiebel</name>
-        <image>Zwiebel.jpg</image>
+        <name>Eier</name>
+        <image>Eier.jpg</image>
     </ingredient>
     <ingredient>
-    <name>Zwiebel</name>
-        <image>Zwiebel.jpg</image>
+        <name>Fleischsauce</name>
+        <image>Fleischsauce.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Kapern</name>
+        <image>Kapern.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Knoblauch</name>
+        <image>Knoblauch.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Oliven</name>
+        <image>Oliven.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Ornella Salat</name>
+        <image>Ornella-Salat.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Paprika</name>
+        <image>Paprika.jpg</image>
+    </ingredient>
+    <ingredient>
+        <name>Texana</name>
+        <image>Texana.jpg</image>
     </ingredient>
 </ingredients>
